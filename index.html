@@ -113,11 +113,13 @@ body { background:#0d0500; overflow:hidden; font-family:'Segoe UI',Tahoma,sans-s
 #reward-info   { margin-top:7px; font-size:.8em; color:#FFD700; text-align:right; }
 
 /* Sauce flash */
-#sauce-flash { position:fixed; inset:0; pointer-events:none; z-index:15; opacity:0; transition:opacity .2s; }
+#sauce-flash { position:fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:15; opacity:0; transition:opacity .2s; }
 
 /* ===== UPGRADE SHOP ===== */
 #upgrade-shop {
-  position:fixed; inset:0; background:rgba(5,2,0,.97);
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  width:100%; height:100%;
+  background:rgba(5,2,0,.97);
   display:none; flex-direction:column; align-items:center;
   z-index:100; overflow-y:auto; padding:30px 20px 100px;
 }
@@ -143,7 +145,9 @@ body { background:#0d0500; overflow:hidden; font-family:'Segoe UI',Tahoma,sans-s
 
 /* ===== ORDER RESULT ===== */
 #order-result {
-  position:fixed; inset:0; background:rgba(0,0,0,.93);
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,.93);
   display:none; flex-direction:column; align-items:center; justify-content:center;
   z-index:100; text-align:center; padding:20px;
 }
@@ -154,7 +158,7 @@ body { background:#0d0500; overflow:hidden; font-family:'Segoe UI',Tahoma,sans-s
 
 /* ===== START SCREEN ===== */
 #start-screen {
-  position:fixed; inset:0; background:rgba(0,0,0,.93);
+  position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.93);
   display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100;
 }
 #start-screen h1 {
@@ -254,7 +258,7 @@ body { background:#0d0500; overflow:hidden; font-family:'Segoe UI',Tahoma,sans-s
   <div class="start-feat">4K · 3D · Sound · Kundenaufträge · Upgrades</div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script>
 // ============================================================
 // RENDERER
@@ -288,13 +292,15 @@ window.addEventListener('resize', () => {
 let audioCtx = null;
 function initAudio() {
   if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const sr=audioCtx.sampleRate, buf=audioCtx.createBuffer(1,sr*3,sr), d=buf.getChannelData(0);
-  for (let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
-  const src=audioCtx.createBufferSource(); src.buffer=buf; src.loop=true;
-  const bp=audioCtx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=0.4;
-  const g=audioCtx.createGain(); g.gain.value=0.025;
-  src.connect(bp); bp.connect(g); g.connect(audioCtx.destination); src.start();
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const sr=audioCtx.sampleRate, buf=audioCtx.createBuffer(1,sr*3,sr), d=buf.getChannelData(0);
+    for (let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+    const src=audioCtx.createBufferSource(); src.buffer=buf; src.loop=true;
+    const bp=audioCtx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=0.4;
+    const g=audioCtx.createGain(); g.gain.value=0.025;
+    src.connect(bp); bp.connect(g); g.connect(audioCtx.destination); src.start();
+  } catch(e) { audioCtx = null; }
 }
 function noise(dur, freq, vol) {
   if (!audioCtx) return;
@@ -353,7 +359,7 @@ sun.shadow.camera.top=8;   sun.shadow.camera.bottom=-8;
 scene.add(sun);
 const heatLight = new THREE.PointLight(0xFF5500, 2.8, 5);
 heatLight.position.set(-2.8,2.5,0.3); scene.add(heatLight);
-scene.add(Object.assign(new THREE.PointLight(0xffeedd,0.6,12),{position:{x:3,y:4,z:3}}));
+const fillLight=new THREE.PointLight(0xffeedd,0.6,12); fillLight.position.set(3,4,3); scene.add(fillLight);
 
 // ============================================================
 // ENVIRONMENT
@@ -717,7 +723,7 @@ function updateIngPanel() {
 // GAME FLOW
 // ============================================================
 function startGame() {
-  initAudio();
+  try { initAudio(); } catch(e) {}
   document.getElementById('start-screen').style.display='none';
   document.getElementById('stats-hud').style.display='block';
   goToShop();
