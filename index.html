@@ -1030,7 +1030,7 @@ function animate() {
     const ratio=timeLeft/currentCustomer.patience;
     const bar=document.getElementById('patience-bar');
     if (bar) { bar.style.width=(ratio*100)+'%'; bar.style.background=ratio>.5?'#4CAF50':ratio>.25?'#FF9800':'#F44336'; }
-    if (timeLeft<=0&&!orderExpired) { orderExpired=true; customerLeaveAngry(); }
+    // patience timer runs out but customer stays
   }
 
   stepTweens(dt);
