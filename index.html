@@ -5,192 +5,279 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Döner Simulator 4K 3D</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0d0500; overflow: hidden; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; }
-  #c { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0500; overflow:hidden; font-family:'Segoe UI',Tahoma,sans-serif; user-select:none; }
+#c { display:block; width:100vw; height:100vh; cursor:crosshair; }
 
-  #hud {
-    position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
-    background: rgba(10,5,0,0.85); border: 1px solid rgba(255,150,0,0.5);
-    border-radius: 14px; padding: 10px 28px; text-align: center;
-    pointer-events: none; z-index: 20; backdrop-filter: blur(4px);
-    box-shadow: 0 0 20px rgba(255,100,0,0.2);
-  }
-  #step-title { font-size: 1.35em; color: #FFD700; font-weight: 700; letter-spacing: 1px; }
-  #step-desc  { font-size: 0.88em; color: #ccc; margin-top: 4px; }
+#hud {
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  background:rgba(10,5,0,.88); border:1px solid rgba(255,150,0,.5);
+  border-radius:14px; padding:10px 28px; text-align:center;
+  pointer-events:none; z-index:20; backdrop-filter:blur(4px);
+}
+#step-title { font-size:1.3em; color:#FFD700; font-weight:700; letter-spacing:1px; }
+#step-desc  { font-size:.85em; color:#ccc; margin-top:3px; }
 
-  #progress {
-    position: fixed; bottom: 130px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 10px; pointer-events: none; z-index: 20;
-  }
-  .sdot { width: 13px; height: 13px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.35); transition: all .3s; }
-  .sdot.active { background: #FFD700; border-color: #FFD700; box-shadow: 0 0 8px #FFD700; }
-  .sdot.done   { background: #4CAF50; border-color: #4CAF50; }
+/* Money */
+#money-hud {
+  position:fixed; top:18px; left:22px;
+  background:rgba(10,5,0,.9); border:1px solid rgba(255,200,0,.5);
+  border-radius:10px; padding:8px 16px; z-index:20; pointer-events:none;
+}
+#money-hud .mval { font-size:1.4em; color:#FFD700; font-weight:800; }
+#money-hud .mlbl { font-size:.7em; color:#888; text-transform:uppercase; letter-spacing:1px; }
 
-  #btn-panel {
-    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 9px; flex-wrap: wrap; justify-content: center;
-    max-width: 94vw; z-index: 20;
-  }
-  .btn {
-    background: linear-gradient(135deg, #6B2F0A, #B85020);
-    color: #fff; border: none; border-radius: 9px; padding: 11px 18px;
-    font-size: .95em; cursor: pointer; font-weight: 700;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.6); transition: all .18s;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .btn:hover  { transform: translateY(-2px); filter: brightness(1.25); box-shadow: 0 6px 18px rgba(0,0,0,0.8); }
-  .btn:active { transform: translateY(1px); filter: brightness(0.9); }
-  .btn.gold   { background: linear-gradient(135deg, #B8860B, #FFD700); color: #333; }
-  .btn.green  { background: linear-gradient(135deg, #1a5e1a, #4CAF50); }
-  .btn.red    { background: linear-gradient(135deg, #6e0000, #e53935); }
-  .btn.white-s{ background: linear-gradient(135deg, #444, #888); }
-  .btn.blue   { background: linear-gradient(135deg, #0d3d7a, #1E88E5); }
-  .btn.disabled { opacity: .4; pointer-events: none; }
+/* Stats */
+#stats-hud {
+  position:fixed; top:82px; left:22px;
+  background:rgba(10,5,0,.78); border:1px solid rgba(100,80,0,.3);
+  border-radius:9px; padding:7px 14px; z-index:20; pointer-events:none; display:none;
+}
+#stats-hud div { font-size:.8em; color:#aaa; line-height:1.7; }
 
-  #meat-counter {
-    position: fixed; top: 110px; right: 22px;
-    background: rgba(10,5,0,0.82); border: 1px solid rgba(255,120,0,0.45);
-    border-radius: 10px; padding: 10px 18px; text-align: center;
-    pointer-events: none; z-index: 20; display: none;
-  }
-  #meat-counter .label { font-size: .78em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-  #meat-counter .count { font-size: 2em; color: #FF6B35; font-weight: 800; }
+/* Progress */
+#progress {
+  position:fixed; bottom:130px; left:50%; transform:translateX(-50%);
+  display:flex; gap:10px; pointer-events:none; z-index:20;
+}
+.sdot { width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,.18); border:2px solid rgba(255,255,255,.3); transition:all .3s; }
+.sdot.active { background:#FFD700; border-color:#FFD700; box-shadow:0 0 8px #FFD700; }
+.sdot.done   { background:#4CAF50; border-color:#4CAF50; }
 
-  #ing-panel {
-    position: fixed; top: 110px; left: 22px;
-    background: rgba(10,5,0,0.82); border: 1px solid rgba(255,120,0,0.45);
-    border-radius: 10px; padding: 12px 16px; min-width: 155px;
-    pointer-events: none; z-index: 20; display: none;
-  }
-  #ing-panel h3 { color: #FFD700; font-size: .78em; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
-  .iitem { font-size: .83em; color: #777; padding: 2px 0; transition: color .3s; }
-  .iitem.yes { color: #4CAF50; }
+/* Buttons */
+#btn-panel {
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  display:flex; gap:9px; flex-wrap:wrap; justify-content:center;
+  max-width:94vw; z-index:20;
+}
+.btn {
+  background:linear-gradient(135deg,#6B2F0A,#B85020);
+  color:#fff; border:none; border-radius:9px; padding:11px 18px;
+  font-size:.95em; cursor:pointer; font-weight:700;
+  box-shadow:0 4px 14px rgba(0,0,0,.6); transition:all .18s;
+  display:flex; align-items:center; gap:5px;
+}
+.btn:hover  { transform:translateY(-2px); filter:brightness(1.25); }
+.btn:active { transform:translateY(1px); }
+.btn.gold   { background:linear-gradient(135deg,#B8860B,#FFD700); color:#333; }
+.btn.green  { background:linear-gradient(135deg,#1a5e1a,#4CAF50); }
+.btn.red    { background:linear-gradient(135deg,#6e0000,#e53935); }
+.btn.blue   { background:linear-gradient(135deg,#0d3d7a,#1E88E5); }
+.btn.gray   { background:linear-gradient(135deg,#333,#666); }
+.btn.disabled { opacity:.35; pointer-events:none; }
 
-  /* CLICK RIPPLE */
-  .ripple {
-    position: fixed; border-radius: 50%; pointer-events: none; z-index: 50;
-    background: rgba(255,165,0,0.45); animation: rippleAnim .5s ease-out forwards;
-  }
-  @keyframes rippleAnim {
-    0%   { width: 0; height: 0; margin: 0; opacity: 1; }
-    100% { width: 80px; height: 80px; margin: -40px; opacity: 0; }
-  }
+/* Meat counter */
+#meat-counter {
+  position:fixed; top:110px; right:22px;
+  background:rgba(10,5,0,.85); border:1px solid rgba(255,120,0,.45);
+  border-radius:10px; padding:10px 18px; text-align:center;
+  pointer-events:none; z-index:20; display:none;
+}
+#meat-counter .lbl { font-size:.74em; color:#aaa; text-transform:uppercase; letter-spacing:1px; }
+#meat-counter .cnt { font-size:1.9em; color:#FF6B35; font-weight:800; }
 
-  /* START SCREEN */
-  #start-screen {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 100;
-  }
-  #start-screen h1 {
-    font-size: clamp(2.5em,7vw,5em); color: #FFD700;
-    text-shadow: 0 0 40px rgba(255,200,0,0.6); margin-bottom: 12px;
-    animation: titlePulse 2s ease-in-out infinite;
-  }
-  @keyframes titlePulse { 0%,100% { text-shadow: 0 0 40px rgba(255,200,0,0.6); } 50% { text-shadow: 0 0 70px rgba(255,200,0,1); } }
-  #start-screen p { color: #ccc; font-size: 1.2em; margin-bottom: 35px; text-align: center; padding: 0 20px; }
-  #start-screen .sub { font-size: .9em; color: #666; margin-top: 14px; }
+/* Order / Ingredient panel */
+#ing-panel {
+  position:fixed; top:110px; left:22px;
+  background:rgba(10,5,0,.9); border:1px solid rgba(255,120,0,.45);
+  border-radius:10px; padding:12px 15px; min-width:168px;
+  pointer-events:none; z-index:20; display:none;
+}
+#ing-panel h3 { color:#FFD700; font-size:.76em; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; }
+.iitem { font-size:.83em; padding:2px 0; }
+.iitem.needed { color:#FF6B35; }
+.iitem.done   { color:#4CAF50; }
+.iitem.extra  { color:#666; font-style:italic; }
 
-  /* DONE SCREEN */
-  #done-screen {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.93);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 100; text-align: center;
-  }
-  #done-screen h1  { font-size: 3em; color: #4CAF50; margin-bottom: 8px; }
-  #done-screen .stars { font-size: 2.5em; margin: 16px 0; }
-  #done-screen .msg { color: #ccc; font-size: 1.2em; max-width: 500px; margin-bottom: 28px; }
-  #done-screen .eiman-der-schwarze { font-size: 8em; animation: spinDoner 2s linear infinite; display: block; margin-bottom: 10px; }
-  @keyframes spinDoner { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* Customer panel */
+#customer-panel {
+  position:fixed; right:22px; top:110px;
+  background:rgba(10,5,0,.92); border:1px solid rgba(255,150,0,.5);
+  border-radius:14px; padding:14px 16px; width:215px;
+  z-index:20; display:none;
+  box-shadow:0 0 20px rgba(255,100,0,.15);
+}
+#cust-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+#cust-emoji { font-size:2.4em; }
+#cust-name  { font-size:1em; font-weight:700; color:#fff; }
+#cust-mood  { font-size:.82em; color:#aaa; }
+#cust-speech {
+  font-size:.78em; color:#ccc; font-style:italic; margin-bottom:8px;
+  background:rgba(255,255,255,.06); border-radius:6px; padding:5px 8px;
+}
+.oreq { font-size:.82em; padding:2px 0; }
+.oreq.ok   { color:#4CAF50; }
+.oreq.miss { color:#FF6B35; }
+#patience-wrap { margin-top:10px; background:rgba(255,255,255,.1); border-radius:4px; height:7px; overflow:hidden; }
+#patience-bar  { height:100%; width:100%; background:#4CAF50; transition:width .5s,background .5s; border-radius:4px; }
+#reward-info   { margin-top:7px; font-size:.8em; color:#FFD700; text-align:right; }
 
-  /* SAUCE SPLASH OVERLAY */
-  #sauce-flash {
-    position: fixed; inset: 0; pointer-events: none; z-index: 15;
-    opacity: 0; transition: opacity .2s;
-  }
+/* Sauce flash */
+#sauce-flash { position:fixed; inset:0; pointer-events:none; z-index:15; opacity:0; transition:opacity .2s; }
+
+/* ===== UPGRADE SHOP ===== */
+#upgrade-shop {
+  position:fixed; inset:0; background:rgba(5,2,0,.97);
+  display:none; flex-direction:column; align-items:center;
+  z-index:100; overflow-y:auto; padding:30px 20px 100px;
+}
+#upgrade-shop h2 { font-size:1.9em; color:#FFD700; margin-bottom:3px; }
+.shop-sub  { color:#777; font-size:.9em; margin-bottom:5px; }
+#shop-money{ font-size:1.35em; color:#4CAF50; font-weight:700; margin-bottom:20px; }
+#upgrade-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(195px,1fr));
+  gap:13px; max-width:860px; width:100%; margin-bottom:22px;
+}
+.upg-card {
+  background:rgba(30,15,5,.9); border:1px solid rgba(255,150,0,.3);
+  border-radius:12px; padding:15px; display:flex; flex-direction:column; gap:6px;
+  transition:border-color .2s;
+}
+.upg-card:hover { border-color:rgba(255,200,0,.7); }
+.upg-card.owned { border-color:rgba(76,175,80,.6); opacity:.65; }
+.upg-icon { font-size:2em; }
+.upg-name { font-size:1em; font-weight:700; color:#fff; }
+.upg-desc { font-size:.8em; color:#aaa; flex:1; }
+.upg-cost { font-size:.88em; color:#FFD700; font-weight:700; }
+#shop-stats-box { color:#666; font-size:.85em; text-align:center; margin-bottom:14px; }
+
+/* ===== ORDER RESULT ===== */
+#order-result {
+  position:fixed; inset:0; background:rgba(0,0,0,.93);
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  z-index:100; text-align:center; padding:20px;
+}
+#result-emoji { font-size:5em; margin-bottom:10px; }
+#result-title { font-size:2em; font-weight:800; margin-bottom:8px; }
+#result-breakdown { font-size:.88em; color:#ccc; line-height:1.9; margin-bottom:14px; max-width:400px; }
+#result-earned { font-size:2.4em; font-weight:800; margin-bottom:22px; }
+
+/* ===== START SCREEN ===== */
+#start-screen {
+  position:fixed; inset:0; background:rgba(0,0,0,.93);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100;
+}
+#start-screen h1 {
+  font-size:clamp(2.5em,7vw,5em); color:#FFD700;
+  text-shadow:0 0 40px rgba(255,200,0,.6); margin-bottom:12px;
+  animation:tpulse 2s ease-in-out infinite;
+}
+@keyframes tpulse { 0%,100%{text-shadow:0 0 40px rgba(255,200,0,.6)} 50%{text-shadow:0 0 70px rgba(255,200,0,1)} }
+#start-screen p { color:#ccc; font-size:1.15em; margin-bottom:30px; text-align:center; padding:0 20px; }
+.start-feat { font-size:.85em; color:#666; margin-top:14px; }
+
+/* Click ripple */
+.ripple { position:fixed; border-radius:50%; pointer-events:none; z-index:50;
+  background:rgba(255,165,0,.4); animation:rA .5s ease-out forwards; }
+@keyframes rA { 0%{width:0;height:0;margin:0;opacity:1} 100%{width:80px;height:80px;margin:-40px;opacity:0} }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-
-<!-- Sauce color overlay flash -->
 <div id="sauce-flash"></div>
 
-<!-- HUD -->
 <div id="hud">
   <div id="step-title">Döner Simulator 4K 3D</div>
-  <div id="step-desc">Bereit für den besten Döner deines Lebens?</div>
+  <div id="step-desc">Bau deinen eigenen Döner-Stand auf!</div>
 </div>
 
-<!-- Progress dots -->
+<div id="money-hud">
+  <div class="mlbl">Kasse</div>
+  <div class="mval">💵 <span id="money-amt">0</span>€</div>
+</div>
+
+<div id="stats-hud">
+  <div>📦 Aufträge: <span id="stat-orders">0</span></div>
+  <div>🏆 Rekord: <span id="stat-best">0</span>€</div>
+</div>
+
 <div id="progress">
   <div class="sdot" id="dot0"></div>
   <div class="sdot" id="dot1"></div>
   <div class="sdot" id="dot2"></div>
   <div class="sdot" id="dot3"></div>
   <div class="sdot" id="dot4"></div>
-  <div class="sdot" id="dot5"></div>
 </div>
 
-<!-- Button panel -->
 <div id="btn-panel"></div>
 
-<!-- Meat counter -->
 <div id="meat-counter">
-  <div class="label">Fleisch</div>
-  <div class="count"><span id="meatN">0</span>/3</div>
+  <div class="lbl">Fleisch</div>
+  <div class="cnt"><span id="meatN">0</span>/<span id="meatMax">3</span></div>
 </div>
 
-<!-- Ingredient list -->
 <div id="ing-panel">
-  <h3>Zutaten</h3>
+  <h3>Bestellung</h3>
   <div id="ing-items"></div>
 </div>
 
-<!-- Start screen -->
-<div id="start-screen">
-  <h1>🥙 Döner Simulator</h1>
-  <p>Willkommen in deiner eigenen Döner-Bude!<br>Schneide das Fleisch, belege das Brot und genieße!</p>
-  <button class="btn gold" style="font-size:1.3em;padding:16px 42px" onclick="startGame()">🎮 Spiel starten</button>
-  <p class="sub">4K · 3D · Sound · Interaktiv</p>
+<div id="customer-panel">
+  <div id="cust-head">
+    <span id="cust-emoji">👨</span>
+    <div><div id="cust-name">-</div><div id="cust-mood">wartet...</div></div>
+  </div>
+  <div id="cust-speech">"..."</div>
+  <div id="order-checklist"></div>
+  <div id="patience-wrap"><div id="patience-bar"></div></div>
+  <div id="reward-info">~<span id="reward-est">0</span>€</div>
 </div>
 
-<!-- Done screen -->
-<div id="done-screen">
-  <span class="eiman-der-schwarze">🥙</span>
-  <h1>Afiyet Olsun!</h1>
-  <div class="stars" id="final-stars">⭐⭐⭐⭐⭐</div>
-  <p class="msg" id="final-msg">Perfekter Döner! Der Meister wäre stolz auf dich!</p>
-  <button class="btn gold" style="font-size:1.15em;padding:14px 36px" onclick="restartGame()">🔄 Nochmal spielen</button>
+<!-- UPGRADE SHOP -->
+<div id="upgrade-shop">
+  <h2>🔧 Stand aufwerten</h2>
+  <div class="shop-sub">Investiere deinen Verdienst in deinen Betrieb!</div>
+  <div id="shop-money">💵 0€</div>
+  <div id="upgrade-grid"></div>
+  <div id="shop-stats-box"></div>
+  <button class="btn gold" onclick="nextCustomer()" style="font-size:1.15em;padding:14px 34px">
+    👥 Nächster Kunde
+  </button>
+</div>
+
+<!-- ORDER RESULT -->
+<div id="order-result">
+  <div id="result-emoji">😊</div>
+  <div id="result-title">Ergebnis</div>
+  <div id="result-breakdown"></div>
+  <div id="result-earned">+0€</div>
+  <button class="btn gold" onclick="goToShop()" style="font-size:1.1em;padding:13px 28px">Weiter →</button>
+</div>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <h1>🥙 Döner Simulator</h1>
+  <p>Bau deinen eigenen Döner-Stand auf!<br>
+     Erfülle Kundenaufträge, verdiene Geld und upgrade deinen Betrieb!</p>
+  <button class="btn gold" style="font-size:1.3em;padding:16px 42px" onclick="startGame()">
+    🎮 Spiel starten
+  </button>
+  <div class="start-feat">4K · 3D · Sound · Kundenaufträge · Upgrades</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 // ============================================================
-// DÖNER SIMULATOR 4K 3D
+// RENDERER
 // ============================================================
-
 const canvas = document.getElementById('c');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 3));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.3;
-renderer.outputEncoding = THREE.sRGBEncoding;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x110500);
 scene.fog = new THREE.FogExp2(0x110500, 0.045);
 
-const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 80);
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth/window.innerHeight, 0.1, 80);
 camera.position.set(0, 3.2, 8.5);
 camera.lookAt(0, -0.2, 0);
 
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
@@ -199,118 +286,58 @@ window.addEventListener('resize', () => {
 // AUDIO
 // ============================================================
 let audioCtx = null;
-let sizzleGain = null;
-
 function initAudio() {
   if (audioCtx) return;
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  startSizzle();
+  const sr=audioCtx.sampleRate, buf=audioCtx.createBuffer(1,sr*3,sr), d=buf.getChannelData(0);
+  for (let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const src=audioCtx.createBufferSource(); src.buffer=buf; src.loop=true;
+  const bp=audioCtx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=0.4;
+  const g=audioCtx.createGain(); g.gain.value=0.025;
+  src.connect(bp); bp.connect(g); g.connect(audioCtx.destination); src.start();
 }
-
-function startSizzle() {
-  const sr = audioCtx.sampleRate;
-  const buf = audioCtx.createBuffer(1, sr * 3, sr);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  const src = audioCtx.createBufferSource();
-  src.buffer = buf; src.loop = true;
-  const bp = audioCtx.createBiquadFilter();
-  bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 0.4;
-  sizzleGain = audioCtx.createGain();
-  sizzleGain.gain.value = 0.025;
-  src.connect(bp); bp.connect(sizzleGain); sizzleGain.connect(audioCtx.destination);
-  src.start();
-}
-
-function playCut() {
+function noise(dur, freq, vol) {
   if (!audioCtx) return;
-  const sr = audioCtx.sampleRate;
-  const buf = audioCtx.createBuffer(1, sr * 0.25, sr);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.exp(-i/(sr*0.04));
-  const src = audioCtx.createBufferSource();
-  src.buffer = buf;
-  const hp = audioCtx.createBiquadFilter();
-  hp.type = 'highpass'; hp.frequency.value = 2500;
-  const g = audioCtx.createGain(); g.gain.value = 0.5;
-  src.connect(hp); hp.connect(g); g.connect(audioCtx.destination);
-  src.start();
-  // Metal zing
-  const o = audioCtx.createOscillator();
-  const og = audioCtx.createGain();
-  o.type = 'sawtooth'; o.frequency.value = 1200;
-  og.gain.setValueAtTime(0.08, audioCtx.currentTime);
-  og.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-  o.connect(og); og.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime + 0.15);
+  const sr=audioCtx.sampleRate, buf=audioCtx.createBuffer(1,sr*dur,sr), d=buf.getChannelData(0);
+  for (let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(sr*dur*0.15));
+  const src=audioCtx.createBufferSource(); src.buffer=buf;
+  const f=audioCtx.createBiquadFilter(); f.type='highpass'; f.frequency.value=freq;
+  const g=audioCtx.createGain(); g.gain.value=vol;
+  src.connect(f); f.connect(g); g.connect(audioCtx.destination); src.start();
 }
-
-function playPlop() {
+function tone(type, freq, vol, dur, endFreq, delay=0) {
   if (!audioCtx) return;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = 'sine';
-  o.frequency.setValueAtTime(250, audioCtx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.22);
-  g.gain.setValueAtTime(0.35, audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.28);
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime + 0.28);
+  const t=audioCtx.currentTime+delay, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.value=freq;
+  if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, t+dur);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t+dur+0.05);
 }
-
-function playSauce() {
-  if (!audioCtx) return;
-  const sr = audioCtx.sampleRate;
-  const buf = audioCtx.createBuffer(1, sr * 0.4, sr);
-  const d = buf.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.exp(-i/(sr*0.15)) * 0.6;
-  const src = audioCtx.createBufferSource();
-  src.buffer = buf;
-  const lp = audioCtx.createBiquadFilter();
-  lp.type = 'lowpass'; lp.frequency.value = 600;
-  const g = audioCtx.createGain(); g.gain.value = 0.4;
-  src.connect(lp); lp.connect(g); g.connect(audioCtx.destination);
-  src.start();
-}
-
-function playFanfare() {
-  if (!audioCtx) return;
-  const melody = [261, 329, 392, 523, 659];
-  melody.forEach((freq, i) => {
-    const t = audioCtx.currentTime + i * 0.14;
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'triangle'; o.frequency.value = freq;
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.22, t + 0.04);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(t); o.stop(t + 0.5);
-  });
-}
+function playCut()    { noise(0.25,2500,0.5); tone('sawtooth',1200,0.12,0.15); }
+function playPlop()   { tone('sine',250,0.35,0.28,70); }
+function playSauce()  { noise(0.4,300,0.35); }
+function playKasse()  { tone('triangle',600,0.2,0.08); tone('triangle',900,0.2,0.1,undefined,0.1); }
+function playFanfare(){ [261,329,392,523,659].forEach((f,i)=>tone('triangle',f,0.22,0.45,undefined,i*0.14)); }
+function playAngry()  { [400,300,200].forEach((f,i)=>tone('sawtooth',f,0.15,0.2,undefined,i*0.12)); }
+function playCash()   { tone('sine',880,0.3,0.05); tone('sine',1100,0.25,0.07,undefined,0.06); }
 
 // ============================================================
 // TWEENS
 // ============================================================
 const tweens = [];
 function tw(target, from, to, dur, ease, cb) {
-  tweens.push({ target, from: {...from}, to, dur, elapsed: 0, ease, cb });
-  for (const k in from) target[k] = from[k];
+  tweens.push({ target, from:{...from}, to, dur, elapsed:0, ease, cb });
+  for (const k in from) target[k]=from[k];
 }
 function stepTweens(dt) {
-  for (let i = tweens.length - 1; i >= 0; i--) {
-    const t = tweens[i];
-    t.elapsed += dt;
-    let p = Math.min(t.elapsed / t.dur, 1);
-    if (t.ease === 'bounce') {
-      if (p < 0.5) p = 4*p*p*p; else { const q=1-p; p=1-4*q*q*q; }
-    } else if (t.ease === 'out') {
-      p = 1 - Math.pow(1-p, 3);
-    } else if (t.ease === 'elastic') {
-      p = p === 0 ? 0 : p === 1 ? 1 : Math.pow(2,-10*p) * Math.sin((p*10-0.75)*(2*Math.PI/3)) + 1;
-    }
-    for (const k in t.to) t.target[k] = t.from[k] + (t.to[k] - t.from[k]) * p;
-    if (t.elapsed >= t.dur) { if (t.cb) t.cb(); tweens.splice(i, 1); }
+  for (let i=tweens.length-1;i>=0;i--) {
+    const t=tweens[i]; t.elapsed+=dt;
+    let p=Math.min(t.elapsed/t.dur,1);
+    if      (t.ease==='bounce')  { p=p<0.5?4*p*p*p:1-4*(1-p)**3; }
+    else if (t.ease==='out')     { p=1-(1-p)**3; }
+    else if (t.ease==='elastic') { p=p===0?0:p===1?1:2**(-10*p)*Math.sin((p*10-0.75)*(2*Math.PI/3))+1; }
+    for (const k in t.to) t.target[k]=t.from[k]+(t.to[k]-t.from[k])*p;
+    if (t.elapsed>=t.dur) { if(t.cb)t.cb(); tweens.splice(i,1); }
   }
 }
 
@@ -318,505 +345,208 @@ function stepTweens(dt) {
 // LIGHTING
 // ============================================================
 scene.add(new THREE.AmbientLight(0x201008, 0.6));
-
 const sun = new THREE.DirectionalLight(0xfff4e0, 1.8);
-sun.position.set(3, 9, 5);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.camera.near = 0.5;
-sun.shadow.camera.far = 30;
-sun.shadow.camera.left = -8;
-sun.shadow.camera.right = 8;
-sun.shadow.camera.top = 8;
-sun.shadow.camera.bottom = -8;
+sun.position.set(3,9,5); sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+sun.shadow.camera.left=-8; sun.shadow.camera.right=8;
+sun.shadow.camera.top=8;   sun.shadow.camera.bottom=-8;
 scene.add(sun);
-
 const heatLight = new THREE.PointLight(0xFF5500, 2.8, 5);
-heatLight.position.set(-2.8, 2.5, 0.3);
-scene.add(heatLight);
-
-const fillLight = new THREE.PointLight(0xffeedd, 0.6, 12);
-fillLight.position.set(3, 4, 3);
-scene.add(fillLight);
-
-const backLight = new THREE.DirectionalLight(0x1a0a00, 0.3);
-backLight.position.set(-4, 3, -5);
-scene.add(backLight);
+heatLight.position.set(-2.8,2.5,0.3); scene.add(heatLight);
+scene.add(Object.assign(new THREE.PointLight(0xffeedd,0.6,12),{position:{x:3,y:4,z:3}}));
 
 // ============================================================
 // ENVIRONMENT
 // ============================================================
-
-// Floor
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(30, 20),
-  new THREE.MeshStandardMaterial({ color: 0x1a0d05, roughness: 0.95 })
-);
-floor.rotation.x = -Math.PI / 2;
-floor.position.y = -1.66;
-floor.receiveShadow = true;
-scene.add(floor);
-
-// Back wall - dark warm wood
-const wall = new THREE.Mesh(
-  new THREE.PlaneGeometry(25, 12),
-  new THREE.MeshStandardMaterial({ color: 0x2a1208 })
-);
-wall.position.set(0, 4, -5);
-scene.add(wall);
-
-// Side walls
-const leftWall = new THREE.Mesh(
-  new THREE.PlaneGeometry(14, 12),
-  new THREE.MeshStandardMaterial({ color: 0x250f06 })
-);
-leftWall.rotation.y = Math.PI / 2;
-leftWall.position.set(-8, 4, 0);
-scene.add(leftWall);
-
-const rightWall = new THREE.Mesh(
-  new THREE.PlaneGeometry(14, 12),
-  new THREE.MeshStandardMaterial({ color: 0x250f06 })
-);
-rightWall.rotation.y = -Math.PI / 2;
-rightWall.position.set(8, 4, 0);
-scene.add(rightWall);
-
-// Counter body (dark wood)
-const counter = new THREE.Mesh(
-  new THREE.BoxGeometry(14, 0.35, 3.5),
-  new THREE.MeshStandardMaterial({ color: 0x1c0c04, roughness: 0.9, metalness: 0.05 })
-);
-counter.position.set(0, -1.52, 0.2);
-counter.receiveShadow = true;
-counter.castShadow = true;
-scene.add(counter);
-
-// Counter front panel
-const counterFront = new THREE.Mesh(
-  new THREE.BoxGeometry(14, 0.7, 0.08),
-  new THREE.MeshStandardMaterial({ color: 0x140a02, roughness: 0.95 })
-);
-counterFront.position.set(0, -1.7, 2.0);
-scene.add(counterFront);
-
-// Stainless steel prep area
-const steel = new THREE.Mesh(
-  new THREE.BoxGeometry(5.5, 0.06, 2.8),
-  new THREE.MeshStandardMaterial({ color: 0xbbbbbb, metalness: 0.85, roughness: 0.15 })
-);
-steel.position.set(0.5, -1.34, 0.2);
-steel.receiveShadow = true;
-scene.add(steel);
-
-// Decorative strip on counter edge
-const strip = new THREE.Mesh(
-  new THREE.BoxGeometry(14, 0.07, 0.07),
-  new THREE.MeshStandardMaterial({ color: 0xddaa66, metalness: 0.7, roughness: 0.3 })
-);
-strip.position.set(0, -1.33, 1.92);
-scene.add(strip);
+function mesh(geo, mat, px=0,py=0,pz=0, rx=0,ry=0,rz=0) {
+  const m=new THREE.Mesh(geo,mat);
+  m.position.set(px,py,pz); m.rotation.set(rx,ry,rz);
+  m.castShadow=m.receiveShadow=true; scene.add(m); return m;
+}
+mesh(new THREE.PlaneGeometry(30,20), new THREE.MeshStandardMaterial({color:0x1a0d05,roughness:.95}), 0,-1.66,0, -Math.PI/2,0,0);
+mesh(new THREE.PlaneGeometry(25,12), new THREE.MeshStandardMaterial({color:0x2a1208}),               0,4,-5);
+mesh(new THREE.BoxGeometry(14,.35,3.5), new THREE.MeshStandardMaterial({color:0x1c0c04,roughness:.9}), 0,-1.52,.2);
+mesh(new THREE.BoxGeometry(5.5,.06,2.8),new THREE.MeshStandardMaterial({color:0xbbbbbb,metalness:.85,roughness:.15}), .5,-1.34,.2);
+mesh(new THREE.BoxGeometry(14,.07,.07), new THREE.MeshStandardMaterial({color:0xddaa66,metalness:.7}), 0,-1.33,1.92);
 
 // ============================================================
 // DÖNER SPIT
 // ============================================================
-const donerGroup = new THREE.Group();
-donerGroup.position.set(-2.6, 0, 0);
-scene.add(donerGroup);
+const donerGroup = new THREE.Group(); donerGroup.position.set(-2.6,0,0); scene.add(donerGroup);
+const poleMat = new THREE.MeshStandardMaterial({color:0xc0c0c0,metalness:.92,roughness:.1});
+donerGroup.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(.042,.042,5,12),poleMat),{castShadow:true}));
+const nutM=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.12,6),poleMat); nutM.position.y=2.1; donerGroup.add(nutM);
+const basePlate=new THREE.Mesh(new THREE.CylinderGeometry(.75,.65,.1,20),
+  new THREE.MeshStandardMaterial({color:0xdddddd,metalness:.7}));
+basePlate.position.y=-2.0; donerGroup.add(basePlate);
 
-// Metal pole
-const poleMat = new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 0.92, roughness: 0.1 });
-donerGroup.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 5, 12), poleMat),{ castShadow: true }));
-
-// Top skewer nut
-const nutGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.12, 6);
-const nutMesh = new THREE.Mesh(nutGeo, poleMat);
-nutMesh.position.y = 2.1;
-donerGroup.add(nutMesh);
-
-// Bottom plate
-const basePlate = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.75, 0.65, 0.1, 20),
-  new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.7, roughness: 0.25 })
-);
-basePlate.position.y = -2.0;
-donerGroup.add(basePlate);
-
-// Meat group (rotates)
-const meatGroup = new THREE.Group();
-donerGroup.add(meatGroup);
-
+const meatGroup = new THREE.Group(); donerGroup.add(meatGroup);
 function buildDoner() {
-  while (meatGroup.children.length) meatGroup.remove(meatGroup.children[0]);
-  const palette = [0x7B2E0A, 0x8B3A12, 0xA0520D, 0xBD6820, 0xD4822A, 0x6B2508, 0x9A4415, 0xC05C18];
-  const crustPalette = [0xD4882A, 0xE09030, 0xC07020, 0xAA5810];
-  const N = 26;
-  for (let i = 0; i < N; i++) {
-    const t = i / N;
-    const r = 0.62 * Math.sin(t * Math.PI) + 0.11;
-    const y = -1.85 + t * 3.7;
-    const isCrust = (i % 3 === 0);
-    const color = isCrust
-      ? crustPalette[Math.floor(Math.random() * crustPalette.length)]
-      : palette[Math.floor(Math.random() * palette.length)];
-    const geo = new THREE.CylinderGeometry(r * 0.91, r, 0.155, 22);
-    const mat = new THREE.MeshStandardMaterial({ color, roughness: isCrust ? 0.7 : 0.88 });
-    const m = new THREE.Mesh(geo, mat);
-    m.position.y = y;
-    m.castShadow = true;
-    meatGroup.add(m);
+  while(meatGroup.children.length) meatGroup.remove(meatGroup.children[0]);
+  const pal=[0x7B2E0A,0x8B3A12,0xA0520D,0xBD6820,0xD4822A,0x6B2508,0x9A4415,0xC05C18];
+  const crust=[0xD4882A,0xE09030,0xC07020];
+  for (let i=0;i<26;i++) {
+    const t=i/26, r=.62*Math.sin(t*Math.PI)+.11, y=-1.85+t*3.7;
+    const ic=i%3===0;
+    const col=ic?crust[i%3]:pal[Math.floor(Math.random()*pal.length)];
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(r*.91,r,.155,22),
+      new THREE.MeshStandardMaterial({color:col,roughness:ic?.7:.88}));
+    m.position.y=y; m.castShadow=true; meatGroup.add(m);
   }
 }
 buildDoner();
+const topCone=new THREE.Mesh(new THREE.ConeGeometry(.13,.28,12),
+  new THREE.MeshStandardMaterial({color:0x5a2008,roughness:.92}));
+topCone.position.y=2.05; donerGroup.add(topCone);
 
-// Top meat cone
-const topCone = new THREE.Mesh(
-  new THREE.ConeGeometry(0.13, 0.28, 12),
-  new THREE.MeshStandardMaterial({ color: 0x5a2008, roughness: 0.92 })
-);
-topCone.position.y = 2.05;
-donerGroup.add(topCone);
-
-// Heat lamp assembly
-const lampBaseGeo = new THREE.CylinderGeometry(0.05, 0.05, 1.8, 8);
-const lampStand = new THREE.Mesh(lampBaseGeo, poleMat);
-lampStand.position.set(-0.1, 2.2, 0.4);
-lampStand.rotation.z = 0.25;
-scene.add(lampStand);
-
-const lampShade = new THREE.Mesh(
-  new THREE.ConeGeometry(0.45, 0.35, 14, 1, true),
-  new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5, side: THREE.BackSide })
-);
-lampShade.position.set(-0.55, 3.6, 0);
-scene.add(lampShade);
-
-const lampShadeOut = new THREE.Mesh(
-  new THREE.ConeGeometry(0.45, 0.35, 14),
-  new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.4, metalness: 0.6 })
-);
-lampShadeOut.position.set(-0.55, 3.6, 0);
-scene.add(lampShadeOut);
-
-// Heat element glow
-const heatElem = new THREE.Mesh(
-  new THREE.TorusGeometry(0.22, 0.03, 6, 20),
-  new THREE.MeshStandardMaterial({ color: 0xFF3300, emissive: 0xFF2200, emissiveIntensity: 5 })
-);
-heatElem.rotation.x = Math.PI / 2;
-heatElem.position.set(-0.55, 3.52, 0);
-scene.add(heatElem);
+// Heat lamp
+const lampShade=new THREE.Mesh(new THREE.ConeGeometry(.45,.35,14,1,true),
+  new THREE.MeshStandardMaterial({color:0x222222,roughness:.5,side:THREE.BackSide}));
+lampShade.position.set(-.55,3.6,0); scene.add(lampShade);
+const lampOut=new THREE.Mesh(new THREE.ConeGeometry(.45,.35,14),
+  new THREE.MeshStandardMaterial({color:0x333333,metalness:.6}));
+lampOut.position.set(-.55,3.6,0); scene.add(lampOut);
+const heatElem=new THREE.Mesh(new THREE.TorusGeometry(.22,.03,6,20),
+  new THREE.MeshStandardMaterial({color:0xFF3300,emissive:0xFF2200,emissiveIntensity:5}));
+heatElem.rotation.x=Math.PI/2; heatElem.position.set(-.55,3.52,0); scene.add(heatElem);
 
 // ============================================================
 // KNIFE
 // ============================================================
-const knifeGroup = new THREE.Group();
-scene.add(knifeGroup);
-knifeGroup.visible = false;
-
-const blade = new THREE.Mesh(
-  new THREE.BoxGeometry(0.07, 1.6, 0.35),
-  new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.97, roughness: 0.05 })
-);
-knifeGroup.add(blade);
-
-const knifeEdge = new THREE.Mesh(
-  new THREE.BoxGeometry(0.04, 1.6, 0.04),
-  new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1.0, roughness: 0.0 })
-);
-knifeEdge.position.set(0, 0, -0.2);
-knifeGroup.add(knifeEdge);
-
-const handle = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.055, 0.055, 0.58, 10),
-  new THREE.MeshStandardMaterial({ color: 0x2a0e04, roughness: 0.85 })
-);
-handle.rotation.z = Math.PI / 2;
-handle.position.set(0, -1.08, 0);
-knifeGroup.add(handle);
-
-const guard = new THREE.Mesh(
-  new THREE.BoxGeometry(0.06, 0.28, 0.12),
-  new THREE.MeshStandardMaterial({ color: 0xbbbbbb, metalness: 0.8 })
-);
-guard.position.set(0, -0.78, 0);
-knifeGroup.add(guard);
+const knifeGroup=new THREE.Group(); scene.add(knifeGroup); knifeGroup.visible=false;
+knifeGroup.add(new THREE.Mesh(new THREE.BoxGeometry(.07,1.6,.35),
+  new THREE.MeshStandardMaterial({color:0xe0e0e0,metalness:.97,roughness:.05})));
+const kHandle=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.58,10),
+  new THREE.MeshStandardMaterial({color:0x2a0e04,roughness:.85}));
+kHandle.rotation.z=Math.PI/2; kHandle.position.set(0,-1.08,0); knifeGroup.add(kHandle);
 
 // ============================================================
-// BREAD GROUP (on counter)
+// BREAD GROUP
 // ============================================================
-const breadGroup = new THREE.Group();
-breadGroup.position.set(1.0, -1.36, 0.1);
-scene.add(breadGroup);
-let breadMesh = null;
-let paperMesh = null;
-
+const breadGroup=new THREE.Group(); breadGroup.position.set(1.0,-1.36,.1); scene.add(breadGroup);
+let breadMesh=null;
 function makeFladenbrot() {
-  const g = new THREE.Group();
-  // Base
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.65, 0.68, 0.22, 24),
-    new THREE.MeshStandardMaterial({ color: 0xD4A050, roughness: 0.95 })
-  );
-  base.scale.x = 1.45;
-  base.scale.z = 0.9;
-  base.castShadow = true;
-  g.add(base);
-  // Sesame dots
-  for (let i = 0; i < 14; i++) {
-    const dot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.022, 5, 5),
-      new THREE.MeshStandardMaterial({ color: 0xf0e080, roughness: 1.0 })
-    );
-    const angle = Math.random() * Math.PI * 2;
-    const rad = Math.random() * 0.45;
-    dot.position.set(Math.cos(angle)*rad*1.4, 0.12, Math.sin(angle)*rad*0.85);
-    g.add(dot);
+  const g=new THREE.Group();
+  const b=new THREE.Mesh(new THREE.CylinderGeometry(.65,.68,.22,24),
+    new THREE.MeshStandardMaterial({color:0xD4A050,roughness:.95}));
+  b.scale.x=1.45; b.scale.z=.9; b.castShadow=true; g.add(b);
+  for (let i=0;i<14;i++) {
+    const d=new THREE.Mesh(new THREE.SphereGeometry(.022,5,5),
+      new THREE.MeshStandardMaterial({color:0xf0e080}));
+    const a=Math.random()*Math.PI*2, r=Math.random()*.45;
+    d.position.set(Math.cos(a)*r*1.4,.12,Math.sin(a)*r*.85); g.add(d);
   }
   return g;
 }
-
 function makeDuerum() {
-  const g = new THREE.Group();
-  const wrap = new THREE.Mesh(
-    new THREE.BoxGeometry(1.55, 0.065, 0.78),
-    new THREE.MeshStandardMaterial({ color: 0xE5C98A, roughness: 0.92 })
-  );
-  wrap.castShadow = true;
-  g.add(wrap);
-  // Fold lines
-  for (let i = -1; i <= 1; i++) {
-    const line = new THREE.Mesh(
-      new THREE.BoxGeometry(1.5, 0.01, 0.013),
-      new THREE.MeshStandardMaterial({ color: 0xC8A860, roughness: 1.0 })
-    );
-    line.position.set(0, 0.04, i * 0.25);
-    g.add(line);
+  const g=new THREE.Group();
+  const w=new THREE.Mesh(new THREE.BoxGeometry(1.55,.065,.78),
+    new THREE.MeshStandardMaterial({color:0xE5C98A,roughness:.92}));
+  w.castShadow=true; g.add(w);
+  for (let i=-1;i<=1;i++) {
+    const l=new THREE.Mesh(new THREE.BoxGeometry(1.5,.01,.013),
+      new THREE.MeshStandardMaterial({color:0xC8A860}));
+    l.position.set(0,.04,i*.25); g.add(l);
   }
   return g;
 }
 
-// Wrapping paper on counter
-function makePaper() {
-  const paper = new THREE.Mesh(
-    new THREE.BoxGeometry(2.4, 0.012, 1.5),
-    new THREE.MeshStandardMaterial({ color: 0xf0f0e8, roughness: 0.85, metalness: 0.0 })
-  );
-  paper.position.y = -0.01;
-  // Paper lines
-  return paper;
-}
-
-// ============================================================
-// INGREDIENT CONTAINERS (decorative, right side)
-// ============================================================
-const ingContainerData = [
-  { color: 0x2E7D32, x: 3.5, z: -0.7 },
-  { color: 0xC62828, x: 4.3, z: -0.7 },
-  { color: 0x7B7C2A, x: 3.5, z: 0.1 },
-  { color: 0x558B2F, x: 4.3, z: 0.1 },
-  { color: 0x1B5E20, x: 3.5, z: 0.9 },
-  { color: 0xF9A825, x: 4.3, z: 0.9 },
-];
-
-const cMat = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.6, roughness: 0.3 });
-ingContainerData.forEach(({ color, x, z }) => {
-  const cont = new THREE.Mesh(new THREE.CylinderGeometry(0.23, 0.19, 0.28, 12), cMat.clone());
-  cont.position.set(x, -1.32, z);
-  cont.receiveShadow = true; cont.castShadow = true;
-  scene.add(cont);
-  const fill = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.20, 0.18, 0.14, 12),
-    new THREE.MeshStandardMaterial({ color, roughness: 0.9 })
-  );
-  fill.position.set(x, -1.18, z);
-  scene.add(fill);
+// Ingredient containers
+const cMat=new THREE.MeshStandardMaterial({color:0x999999,metalness:.6,roughness:.3});
+[{c:0x2E7D32,x:3.5,z:-.7},{c:0xC62828,x:4.3,z:-.7},{c:0x7B7C2A,x:3.5,z:.1},
+ {c:0x558B2F,x:4.3,z:.1},{c:0x1B5E20,x:3.5,z:.9},{c:0xF9A825,x:4.3,z:.9}]
+.forEach(({c,x,z})=>{
+  const ct=new THREE.Mesh(new THREE.CylinderGeometry(.23,.19,.28,12),cMat.clone());
+  ct.position.set(x,-1.32,z); scene.add(ct);
+  const fi=new THREE.Mesh(new THREE.CylinderGeometry(.20,.18,.14,12),
+    new THREE.MeshStandardMaterial({color:c,roughness:.9}));
+  fi.position.set(x,-1.18,z); scene.add(fi);
+});
+[{c:0xF5F5F5,x:5.2,z:-.35},{c:0xE53935,x:5.2,z:.45},{c:0x81C784,x:5.2,z:1.2}]
+.forEach(({c,x,z})=>{
+  const b=new THREE.Mesh(new THREE.CylinderGeometry(.095,.12,.58,10),
+    new THREE.MeshStandardMaterial({color:c,transparent:true,opacity:.82,roughness:.15}));
+  b.position.set(x,-1.07,z); b.castShadow=true; scene.add(b);
+  const cp=new THREE.Mesh(new THREE.CylinderGeometry(.048,.09,.09,8),
+    new THREE.MeshStandardMaterial({color:0x555555,metalness:.6}));
+  cp.position.set(x,-.76,z); scene.add(cp);
 });
 
-// Sauce bottles
-const sauceBottleData = [
-  { color: 0xF5F5F5, x: 5.2, z: -0.35 },
-  { color: 0xE53935, x: 5.2, z: 0.45 },
-  { color: 0x81C784, x: 5.2, z: 1.2 },
-];
-sauceBottleData.forEach(({ color, x, z }) => {
-  const bMat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.82, roughness: 0.15, metalness: 0.1 });
-  const bot = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.12, 0.58, 10), bMat);
-  bot.position.set(x, -1.07, z);
-  bot.castShadow = true;
-  scene.add(bot);
-  const cap = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.048, 0.09, 0.09, 8),
-    new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.6 })
-  );
-  cap.position.set(x, -0.76, z);
-  scene.add(cap);
-});
-
-// Knife holder on the left
-const knifeholder = new THREE.Mesh(
-  new THREE.BoxGeometry(0.18, 0.5, 0.45),
-  new THREE.MeshStandardMaterial({ color: 0x8B4513, roughness: 0.9 })
-);
-knifeholder.position.set(-4, -1.1, 0);
-scene.add(knifeholder);
-
 // ============================================================
-// INGREDIENTS (3D objects placed on bread)
+// INGREDIENT FACTORIES
 // ============================================================
-let ingredientHeight = 0.15;
-
 function mkLettuce() {
-  const g = new THREE.Group();
-  const gMat = new THREE.MeshStandardMaterial({ roughness: 0.9, side: THREE.DoubleSide });
-  for (let i = 0; i < 6; i++) {
-    const sh = new THREE.PlaneGeometry(0.55 + Math.random()*0.35, 0.28 + Math.random()*0.18);
-    const m = new THREE.Mesh(sh, gMat.clone());
-    m.material.color.setHSL(0.29 + Math.random()*0.06, 0.72, 0.3 + Math.random()*0.1);
-    m.rotation.z = Math.random() * Math.PI;
-    m.rotation.x = (Math.random()-0.5) * 0.4;
-    m.position.set((Math.random()-0.5)*0.5, 0, (Math.random()-0.5)*0.28);
-    g.add(m);
+  const g=new THREE.Group();
+  for (let i=0;i<6;i++) {
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(.55+Math.random()*.35,.28+Math.random()*.18),
+      new THREE.MeshStandardMaterial({roughness:.9,side:THREE.DoubleSide}));
+    m.material.color.setHSL(.29+Math.random()*.06,.72,.3+Math.random()*.1);
+    m.rotation.set((Math.random()-.5)*.4,0,Math.random()*Math.PI);
+    m.position.set((Math.random()-.5)*.5,0,(Math.random()-.5)*.28); g.add(m);
   }
   return g;
 }
-
 function mkTomato() {
-  const g = new THREE.Group();
-  for (let i = 0; i < 5; i++) {
-    const m = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.19, 0.19, 0.05, 14),
-      new THREE.MeshStandardMaterial({ color: 0xE53935, roughness: 0.65 })
-    );
-    const a = (i/5) * Math.PI * 2;
-    m.position.set(Math.cos(a)*0.32, 0, Math.sin(a)*0.18);
-    g.add(m);
-    // Seed lines
-    const seedMat = new THREE.MeshStandardMaterial({ color: 0xFFCDD2, roughness: 0.8 });
-    for (let j = 0; j < 3; j++) {
-      const seed = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, 0.012), seedMat);
-      seed.rotation.z = (j/3)*Math.PI*2;
-      seed.position.set(Math.cos(a)*0.32, 0.04, Math.sin(a)*0.18);
-      g.add(seed);
-    }
+  const g=new THREE.Group();
+  for (let i=0;i<5;i++) {
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.05,14),
+      new THREE.MeshStandardMaterial({color:0xE53935,roughness:.65}));
+    const a=(i/5)*Math.PI*2; m.position.set(Math.cos(a)*.32,0,Math.sin(a)*.18); g.add(m);
   }
   return g;
 }
-
 function mkOnion() {
-  const g = new THREE.Group();
-  const colors = [0xE8D5B5, 0xD4BEA0, 0xEDE0D0];
-  for (let i = 0; i < 4; i++) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.14 + i*0.06, 0.038, 7, 16),
-      new THREE.MeshStandardMaterial({ color: colors[i%3], roughness: 0.75 })
-    );
-    ring.rotation.x = Math.PI/2;
-    ring.position.set((Math.random()-0.5)*0.3, 0, (Math.random()-0.5)*0.15);
-    g.add(ring);
+  const g=new THREE.Group();
+  for (let i=0;i<4;i++) {
+    const r=new THREE.Mesh(new THREE.TorusGeometry(.14+i*.06,.038,7,16),
+      new THREE.MeshStandardMaterial({color:[0xE8D5B5,0xD4BEA0,0xEDE0D0][i%3],roughness:.75}));
+    r.rotation.x=Math.PI/2; r.position.set((Math.random()-.5)*.3,0,(Math.random()-.5)*.15); g.add(r);
   }
   return g;
 }
-
 function mkCabbage() {
-  const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color: 0xC5E6CA, roughness: 0.9, side: THREE.DoubleSide });
-  for (let i = 0; i < 10; i++) {
-    const strip = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.28 + Math.random()*0.18, 0.075),
-      mat.clone()
-    );
-    strip.material.color.setHSL(0.33, 0.55, 0.72 + Math.random()*0.12);
-    strip.rotation.z = Math.random() * Math.PI;
-    strip.rotation.x = (Math.random()-0.5) * 0.5;
-    strip.position.set((Math.random()-0.5)*0.65, 0, (Math.random()-0.5)*0.3);
-    g.add(strip);
+  const g=new THREE.Group();
+  for (let i=0;i<10;i++) {
+    const s=new THREE.Mesh(new THREE.PlaneGeometry(.28+Math.random()*.18,.075),
+      new THREE.MeshStandardMaterial({side:THREE.DoubleSide}));
+    s.material.color.setHSL(.33,.55,.72+Math.random()*.12);
+    s.rotation.set((Math.random()-.5)*.5,0,Math.random()*Math.PI);
+    s.position.set((Math.random()-.5)*.65,0,(Math.random()-.5)*.3); g.add(s);
   }
   return g;
 }
-
 function mkCucumber() {
-  const g = new THREE.Group();
-  for (let i = 0; i < 5; i++) {
-    const m = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.13, 0.13, 0.045, 12),
-      new THREE.MeshStandardMaterial({ color: 0x388E3C, roughness: 0.7 })
-    );
-    const a = (i/5)*Math.PI*2;
-    m.position.set(Math.cos(a)*0.28, 0, Math.sin(a)*0.15);
-    g.add(m);
-    // Skin lines
-    const lineMat = new THREE.MeshStandardMaterial({ color: 0x2E7D32, roughness: 0.9 });
-    for (let j = 0; j < 4; j++) {
-      const line = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.26), lineMat);
-      line.rotation.y = (j/4)*Math.PI*2;
-      line.position.copy(m.position);
-      g.add(line);
-    }
+  const g=new THREE.Group();
+  for (let i=0;i<5;i++) {
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.045,12),
+      new THREE.MeshStandardMaterial({color:0x388E3C,roughness:.7}));
+    const a=(i/5)*Math.PI*2; m.position.set(Math.cos(a)*.28,0,Math.sin(a)*.15); g.add(m);
   }
   return g;
 }
-
 function mkCheese() {
-  const g = new THREE.Group();
-  const m = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.95, 0.62),
-    new THREE.MeshStandardMaterial({ color: 0xFFEB3B, roughness: 0.88, side: THREE.DoubleSide })
-  );
-  m.rotation.x = -(Math.PI/2 - 0.06);
-  g.add(m);
-  // Holes in cheese
-  for (let i = 0; i < 3; i++) {
-    const hole = new THREE.Mesh(
-      new THREE.CircleGeometry(0.045, 8),
-      new THREE.MeshStandardMaterial({ color: 0xF9A825, roughness: 1.0 })
-    );
-    hole.rotation.x = -Math.PI/2;
-    hole.position.set((Math.random()-0.5)*0.5, 0.01, (Math.random()-0.5)*0.25);
-    g.add(hole);
-  }
-  return g;
+  const g=new THREE.Group();
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(.95,.62),
+    new THREE.MeshStandardMaterial({color:0xFFEB3B,roughness:.88,side:THREE.DoubleSide}));
+  m.rotation.x=-(Math.PI/2-.06); g.add(m); return g;
 }
-
 function mkMeat() {
-  const g = new THREE.Group();
-  const meat = new THREE.Mesh(
-    new THREE.BoxGeometry(1.1, 0.09, 0.62),
-    new THREE.MeshStandardMaterial({ color: 0x8B3A12, roughness: 0.85 })
-  );
-  g.add(meat);
-  const crustColors = [0xD4822A, 0xC07020, 0xB86018];
-  for (let i = 0; i < 4; i++) {
-    const stripe = new THREE.Mesh(
-      new THREE.BoxGeometry(0.85, 0.095, 0.065),
-      new THREE.MeshStandardMaterial({ color: crustColors[i%3], roughness: 0.78 })
-    );
-    stripe.position.set(0, 0, -0.22 + i*0.15);
-    g.add(stripe);
-  }
+  const g=new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(1.1,.09,.62),
+    new THREE.MeshStandardMaterial({color:0x8B3A12,roughness:.85})));
+  [0xD4822A,0xC07020,0xB86018,0xD4822A].forEach((c,i)=>{
+    const s=new THREE.Mesh(new THREE.BoxGeometry(.85,.095,.065),
+      new THREE.MeshStandardMaterial({color:c,roughness:.78}));
+    s.position.set(0,0,-.22+i*.15); g.add(s);
+  });
   return g;
 }
-
-function mkSauce(sauceColor) {
-  const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color: sauceColor, roughness: 0.28, metalness: 0.05 });
-  for (let i = 0; i < 8; i++) {
-    const blob = new THREE.Mesh(
-      new THREE.SphereGeometry(0.04 + Math.random()*0.055, 7, 7),
-      mat.clone()
-    );
-    blob.scale.y = 0.28;
-    blob.position.set((Math.random()-0.5)*0.82, 0, (Math.random()-0.5)*0.38);
-    g.add(blob);
-  }
-  for (let i = 0; i < 4; i++) {
-    const drizzle = new THREE.Mesh(
-      new THREE.BoxGeometry(0.45 + Math.random()*0.4, 0.018, 0.038),
-      mat.clone()
-    );
-    drizzle.rotation.z = (Math.random()-0.5)*0.4;
-    drizzle.position.set((Math.random()-0.5)*0.25, 0, (Math.random()-0.5)*0.28);
-    g.add(drizzle);
+function mkSauce(color) {
+  const g=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color,roughness:.28});
+  for (let i=0;i<8;i++) {
+    const b=new THREE.Mesh(new THREE.SphereGeometry(.04+Math.random()*.055,7,7),mat.clone());
+    b.scale.y=.28; b.position.set((Math.random()-.5)*.82,0,(Math.random()-.5)*.38); g.add(b);
   }
   return g;
 }
@@ -824,128 +554,163 @@ function mkSauce(sauceColor) {
 // ============================================================
 // PARTICLES
 // ============================================================
-const particles = [];
+const particles=[];
 function spawnMeatParticles(pos) {
-  const cols = [0x8B3A12, 0xA0520D, 0xD2691E, 0xCD853F, 0x7B2E0A];
-  for (let i = 0; i < 28; i++) {
-    const m = new THREE.Mesh(
-      new THREE.SphereGeometry(0.025 + Math.random()*0.042, 4, 4),
-      new THREE.MeshStandardMaterial({ color: cols[Math.floor(Math.random()*cols.length)] })
-    );
-    m.position.copy(pos);
-    scene.add(m);
-    particles.push({
-      m,
-      v: new THREE.Vector3((Math.random()-0.5)*0.18, Math.random()*0.18 + 0.04, (Math.random()-0.5)*0.18),
-      life: 1.0
-    });
+  const cols=[0x8B3A12,0xA0520D,0xD2691E,0xCD853F];
+  for (let i=0;i<24;i++) {
+    const m=new THREE.Mesh(new THREE.SphereGeometry(.025+Math.random()*.04,4,4),
+      new THREE.MeshStandardMaterial({color:cols[Math.floor(Math.random()*cols.length)]}));
+    m.position.copy(pos); scene.add(m);
+    particles.push({m,v:new THREE.Vector3((Math.random()-.5)*.18,Math.random()*.18+.04,(Math.random()-.5)*.18),life:1.0});
   }
 }
-
 function updateParticles() {
-  const g = new THREE.Vector3(0, -0.0055, 0);
-  for (let i = particles.length-1; i >= 0; i--) {
-    const p = particles[i];
-    p.v.add(g);
-    p.m.position.add(p.v);
-    p.life -= 0.018;
-    p.m.material.opacity = p.life;
-    p.m.material.transparent = true;
-    if (p.life <= 0) { scene.remove(p.m); p.m.geometry.dispose(); particles.splice(i,1); }
+  const grav=new THREE.Vector3(0,-.006,0);
+  for (let i=particles.length-1;i>=0;i--) {
+    const p=particles[i]; p.v.add(grav); p.m.position.add(p.v); p.life-=.018;
+    p.m.material.opacity=p.life; p.m.material.transparent=true;
+    if (p.life<=0){scene.remove(p.m);p.m.geometry.dispose();particles.splice(i,1);}
   }
 }
 
 // ============================================================
-// RAYCASTING
+// GAME DATA
 // ============================================================
-const raycaster = new THREE.Raycaster();
-const mouse2d = new THREE.Vector2();
+const INGREDIENT_DEFS=[
+  {name:'Salat',    emoji:'🥬',mkFn:mkLettuce, yOff:.08},
+  {name:'Tomate',   emoji:'🍅',mkFn:mkTomato,  yOff:.07},
+  {name:'Zwiebeln', emoji:'🧅',mkFn:mkOnion,   yOff:.07},
+  {name:'Kohl',     emoji:'🥦',mkFn:mkCabbage, yOff:.06},
+  {name:'Gurke',    emoji:'🥒',mkFn:mkCucumber,yOff:.07},
+  {name:'Käse',     emoji:'🧀',mkFn:mkCheese,  yOff:.06},
+];
+const SAUCE_DEFS=[
+  {name:'Knoblauch',emoji:'🧄',color:0xF5F5F5},
+  {name:'Scharf',   emoji:'🌶️',color:0xE53935},
+  {name:'Kräuter',  emoji:'🌿',color:0x66BB6A},
+];
+const CUSTOMERS=[
+  {name:'Mehmet',  emoji:'👨',mood:'😊 Hungrig'},
+  {name:'Klaus',   emoji:'👴',mood:'🙂 Entspannt'},
+  {name:'Sarah',   emoji:'👩',mood:'😄 Freundlich'},
+  {name:'Yusuf',   emoji:'🧔',mood:'😐 Ungeduldig'},
+  {name:'Emma',    emoji:'👧',mood:'🤩 Begeistert'},
+  {name:'Ali',     emoji:'🧑',mood:'😊 Nett'},
+  {name:'Petra',   emoji:'👩‍🦳',mood:'🙂 Ruhig'},
+  {name:'Hasan',   emoji:'👨‍🦱',mood:'😋 Ausgehungert'},
+  {name:'Lena',    emoji:'👩‍🦰',mood:'😍 Verliebt (in Döner)'},
+  {name:'Kemal',   emoji:'🧓',mood:'😤 Kritisch'},
+];
+const UPGRADE_DEFS=[
+  {id:'messer', name:'Profi-Messer',   emoji:'🔪',desc:'Schneide 2 Portionen auf einmal',      cost:12},
+  {id:'schild', name:'Werbeschild',    emoji:'📢',desc:'+30% mehr Trinkgeld von Kunden',       cost:18},
+  {id:'spieß',  name:'Großer Spieß',   emoji:'🍖',desc:'Fleisch mehr wert, größere Aufträge',  cost:22},
+  {id:'vitrine',name:'Frische Vitrine',emoji:'🥗',desc:'+0.5€ für jede erfüllte Zutat',        cost:20},
+  {id:'uhr',    name:'Sanduhr',        emoji:'⏳',desc:'+20 Sekunden Zeit pro Bestellung',     cost:28},
+  {id:'stamm',  name:'Stammkunden',    emoji:'💳',desc:'Jede 3. Bestellung = doppelt Geld',    cost:40},
+];
 
 // ============================================================
 // GAME STATE
 // ============================================================
-let gameState = 'start';
-let meatCount = 0;
-let breadType = null;
-let addedIngredients = [];
-let addedSauces = [];
-let isCutting = false;
-
-const INGREDIENT_DEFS = [
-  { name: 'Salat',    emoji: '🥬', mkFn: mkLettuce,  yOff: 0.08 },
-  { name: 'Tomate',   emoji: '🍅', mkFn: mkTomato,   yOff: 0.07 },
-  { name: 'Zwiebeln', emoji: '🧅', mkFn: mkOnion,    yOff: 0.07 },
-  { name: 'Kohl',     emoji: '🥦', mkFn: mkCabbage,  yOff: 0.06 },
-  { name: 'Gurke',    emoji: '🥒', mkFn: mkCucumber, yOff: 0.07 },
-  { name: 'Käse',     emoji: '🧀', mkFn: mkCheese,   yOff: 0.06 },
-];
-
-const SAUCE_DEFS = [
-  { name: 'Knoblauch', emoji: '🧄', color: 0xF5F5F5 },
-  { name: 'Scharf',    emoji: '🌶️', color: 0xE53935 },
-  { name: 'Kräuter',   emoji: '🌿', color: 0x66BB6A },
-];
+let gameState      = 'start';
+let money          = 0;
+let ordersCompleted= 0;
+let bestOrder      = 0;
+let currentCustomer= null;
+let patienceStart  = 0;
+let orderExpired   = false;
+let isCutting      = false;
+let breadType      = null;
+let meatCount      = 0;
+let ingredientHeight=0.15;
+let addedIngredients=[];
+let addedSauces    =[];
+const upgrades     ={messer:false,schild:false,spieß:false,vitrine:false,uhr:false,stamm:false};
 
 // ============================================================
 // UI HELPERS
 // ============================================================
-function setHUD(title, desc) {
-  document.getElementById('step-title').textContent = title;
-  document.getElementById('step-desc').textContent = desc;
-}
-
-function setDots(active) {
-  for (let i = 0; i < 6; i++) {
-    const d = document.getElementById('dot'+i);
-    d.className = 'sdot' + (i < active ? ' done' : i === active ? ' active' : '');
-  }
-}
-
-function setBtns(btns) {
-  const p = document.getElementById('btn-panel');
-  p.innerHTML = '';
-  btns.forEach(({ label, emoji, cls, id, onClick }) => {
-    const b = document.createElement('button');
-    b.className = 'btn ' + (cls||'');
-    b.id = id || '';
-    b.innerHTML = (emoji||'') + ' ' + label;
-    b.onclick = onClick;
-    p.appendChild(b);
+function setHUD(t,d){ document.getElementById('step-title').textContent=t; document.getElementById('step-desc').textContent=d; }
+function setDots(n) { for(let i=0;i<5;i++){const d=document.getElementById('dot'+i);d.className='sdot'+(i<n?' done':i===n?' active':'');} }
+function setBtns(arr){
+  const p=document.getElementById('btn-panel'); p.innerHTML='';
+  arr.forEach(({label,emoji,cls,id,onClick})=>{
+    const b=document.createElement('button');
+    b.className='btn '+(cls||''); b.id=id||'';
+    b.innerHTML=(emoji||'')+' '+label; b.onclick=onClick; p.appendChild(b);
   });
+}
+function updateMoney(){ document.getElementById('money-amt').textContent=money; }
+function updateStats(){ document.getElementById('stat-orders').textContent=ordersCompleted; document.getElementById('stat-best').textContent=bestOrder; }
+function showRipple(x,y){const r=document.createElement('div');r.className='ripple';r.style.left=x+'px';r.style.top=y+'px';document.body.appendChild(r);setTimeout(()=>r.remove(),500);}
+function sauceFlash(hex){const e=document.getElementById('sauce-flash'),r=(hex>>16)&0xff,g=(hex>>8)&0xff,b=hex&0xff;e.style.background=`rgba(${r},${g},${b},.18)`;e.style.opacity='1';setTimeout(()=>e.style.opacity='0',250);}
+
+// ============================================================
+// CUSTOMER ORDER SYSTEM
+// ============================================================
+function generateCustomer() {
+  const base=CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)];
+  const bread=Math.random()>.4?'Fladenbrot':'Dürüm';
+  const maxIng=upgrades.spieß?5:4;
+  const numIng=2+Math.floor(Math.random()*(maxIng-1));
+  const reqIng=[...INGREDIENT_DEFS].sort(()=>Math.random()-.5).slice(0,numIng).map(d=>d.name);
+  const numSauce=1+Math.floor(Math.random()*2);
+  const reqSauce=[...SAUCE_DEFS].sort(()=>Math.random()-.5).slice(0,numSauce).map(d=>d.name);
+  const meat=2+Math.floor(Math.random()*2);
+  const patience=(upgrades.uhr?65:45)+numIng*3;
+  const baseReward=3+numIng*1.5+numSauce+meat*(upgrades.spieß?1.5:1);
+  return {...base,bread,reqIng,reqSauce,meat,patience,baseReward};
+}
+
+function showCustomerPanel(c) {
+  document.getElementById('cust-emoji').textContent=c.emoji;
+  document.getElementById('cust-name').textContent=c.name;
+  document.getElementById('cust-mood').textContent=c.mood;
+  document.getElementById('cust-speech').textContent=
+    `"${c.bread}, ${c.meat}× Fleisch, ${c.reqIng.join(', ')}, Soße: ${c.reqSauce.join(', ')}"`;
+  document.getElementById('reward-est').textContent=Math.round(c.baseReward+2);
+  document.getElementById('customer-panel').style.display='block';
+  updateOrderChecklist();
+}
+
+function updateOrderChecklist() {
+  if (!currentCustomer) return;
+  const c=currentCustomer, el=document.getElementById('order-checklist');
+  el.innerHTML='';
+  const row=(label,ok,pending)=>{
+    const d=document.createElement('div'); d.className='oreq '+(ok?'ok':pending?'miss':'miss');
+    d.textContent=(ok?'✅':'🔲')+' '+label; el.appendChild(d);
+  };
+  row(c.bread, breadType===c.bread);
+  row(`${c.meat}× Fleisch (${meatCount}/${c.meat})`, meatCount>=c.meat);
+  c.reqIng.forEach(n=>row(n, addedIngredients.includes(n)));
+  c.reqSauce.forEach(n=>row(n, addedSauces.includes(n)));
 }
 
 function updateIngPanel() {
-  const c = document.getElementById('ing-items');
-  c.innerHTML = '';
-  INGREDIENT_DEFS.forEach(({ name, emoji }) => {
-    const d = document.createElement('div');
-    d.className = 'iitem' + (addedIngredients.includes(name) ? ' yes' : '');
-    d.textContent = emoji + ' ' + name;
-    c.appendChild(d);
+  if (!currentCustomer) return;
+  const c=currentCustomer, el=document.getElementById('ing-items');
+  el.innerHTML='';
+  c.reqIng.forEach(name=>{
+    const ok=addedIngredients.includes(name);
+    const emoji=INGREDIENT_DEFS.find(d=>d.name===name).emoji;
+    const d=document.createElement('div'); d.className='iitem '+(ok?'done':'needed');
+    d.textContent=(ok?'✅':'❌')+' '+emoji+' '+name; el.appendChild(d);
   });
-  SAUCE_DEFS.forEach(({ name, emoji }) => {
-    const d = document.createElement('div');
-    d.className = 'iitem' + (addedSauces.includes(name) ? ' yes' : '');
-    d.textContent = emoji + ' ' + name;
-    c.appendChild(d);
+  c.reqSauce.forEach(name=>{
+    const ok=addedSauces.includes(name);
+    const emoji=SAUCE_DEFS.find(d=>d.name===name).emoji;
+    const d=document.createElement('div'); d.className='iitem '+(ok?'done':'needed');
+    d.textContent=(ok?'✅':'❌')+' '+emoji+' '+name; el.appendChild(d);
   });
-}
-
-function showRipple(x, y) {
-  const r = document.createElement('div');
-  r.className = 'ripple';
-  r.style.left = x + 'px';
-  r.style.top  = y + 'px';
-  document.body.appendChild(r);
-  setTimeout(() => r.remove(), 500);
-}
-
-function sauceFlash(hex) {
-  const el = document.getElementById('sauce-flash');
-  const r = (hex>>16)&0xff, g = (hex>>8)&0xff, b = hex&0xff;
-  el.style.background = `rgba(${r},${g},${b},0.18)`;
-  el.style.opacity = '1';
-  setTimeout(() => { el.style.opacity = '0'; }, 250);
+  // extras
+  [...addedIngredients,...addedSauces].forEach(name=>{
+    if (c.reqIng.includes(name)||c.reqSauce.includes(name)) return;
+    const def=[...INGREDIENT_DEFS,...SAUCE_DEFS].find(d=>d.name===name);
+    const d=document.createElement('div'); d.className='iitem extra';
+    d.textContent='➕ '+(def?.emoji||'')+' '+name+' (extra)'; el.appendChild(d);
+  });
 }
 
 // ============================================================
@@ -953,280 +718,318 @@ function sauceFlash(hex) {
 // ============================================================
 function startGame() {
   initAudio();
-  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('start-screen').style.display='none';
+  document.getElementById('stats-hud').style.display='block';
+  goToShop();
+}
+
+function goToShop() {
+  gameState='shop';
+  document.getElementById('customer-panel').style.display='none';
+  document.getElementById('ing-panel').style.display='none';
+  document.getElementById('meat-counter').style.display='none';
+  document.getElementById('order-result').style.display='none';
+  setBtns([]);
+  renderShop();
+  document.getElementById('upgrade-shop').style.display='flex';
+}
+
+function renderShop() {
+  document.getElementById('shop-money').textContent='💵 Kasse: '+money+'€';
+  document.getElementById('shop-stats-box').textContent=
+    `📦 Bestellungen: ${ordersCompleted}   🏆 Rekord: ${bestOrder}€`;
+  const grid=document.getElementById('upgrade-grid'); grid.innerHTML='';
+  UPGRADE_DEFS.forEach(({id,name,emoji,desc,cost})=>{
+    const owned=upgrades[id], can=money>=cost;
+    const card=document.createElement('div');
+    card.className='upg-card'+(owned?' owned':'');
+    card.innerHTML=`
+      <div class="upg-icon">${emoji}</div>
+      <div class="upg-name">${name}</div>
+      <div class="upg-desc">${desc}</div>
+      <div class="upg-cost">${owned?'✅ Gekauft':'💵 '+cost+'€'}</div>
+      ${!owned?`<button class="btn ${can?'gold':'gray'}" style="margin-top:6px;padding:8px 12px;font-size:.83em"
+        onclick="buyUpgrade('${id}')" ${!can?'disabled':''}>Kaufen</button>`:''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function buyUpgrade(id) {
+  initAudio();
+  const def=UPGRADE_DEFS.find(d=>d.id===id);
+  if (!def||upgrades[id]||money<def.cost) return;
+  money-=def.cost; upgrades[id]=true;
+  playCash(); updateMoney(); renderShop();
+}
+
+function nextCustomer() {
+  initAudio();
+  document.getElementById('upgrade-shop').style.display='none';
+  currentCustomer=generateCustomer();
+  breadType=null; meatCount=0; ingredientHeight=.15;
+  addedIngredients=[]; addedSauces=[]; orderExpired=false;
+  while(breadGroup.children.length) breadGroup.remove(breadGroup.children[0]);
+  buildDoner();
+  showCustomerPanel(currentCustomer);
   chooseBreadStep();
 }
 
 function chooseBreadStep() {
-  gameState = 'chooseBread';
-  setDots(0);
-  setHUD('Schritt 1: Brot wählen', 'Welches Brot soll es heute sein?');
+  gameState='chooseBread'; setDots(0);
+  setHUD('Schritt 1: Brot wählen', `${currentCustomer.name} möchte: ${currentCustomer.bread}`);
   setBtns([
-    { label: 'Fladenbrot', emoji: '🫓', cls: 'gold', onClick: () => placeBread('Fladenbrot') },
-    { label: 'Dürüm Wrap',  emoji: '🌯', cls: 'gold', onClick: () => placeBread('Dürüm') },
+    {label:'Fladenbrot',emoji:'🫓',cls:'gold',onClick:()=>placeBread('Fladenbrot')},
+    {label:'Dürüm Wrap', emoji:'🌯',cls:'gold',onClick:()=>placeBread('Dürüm')},
   ]);
 }
 
 function placeBread(type) {
-  initAudio();
-  breadType = type;
-  playPlop();
-
-  while (breadGroup.children.length) breadGroup.remove(breadGroup.children[0]);
-
-  const paper = makePaper();
-  breadGroup.add(paper);
-
-  breadMesh = type === 'Fladenbrot' ? makeFladenbrot() : makeDuerum();
-  breadGroup.add(breadMesh);
-
-  ingredientHeight = 0.165;
-  addedIngredients = [];
-  addedSauces = [];
-
-  breadMesh.scale.set(0.01, 0.01, 0.01);
-  tw(breadMesh.scale, { x: 0.01, y: 0.01, z: 0.01 }, { x: 1, y: 1, z: 1 }, 0.4, 'elastic');
-
+  breadType=type; playPlop();
+  while(breadGroup.children.length) breadGroup.remove(breadGroup.children[0]);
+  breadMesh=type==='Fladenbrot'?makeFladenbrot():makeDuerum();
+  breadMesh.scale.set(.01,.01,.01); breadGroup.add(breadMesh);
+  tw(breadMesh.scale,{x:.01,y:.01,z:.01},{x:1,y:1,z:1},.4,'elastic');
+  patienceStart=Date.now();
+  updateOrderChecklist();
   cutMeatStep();
 }
 
 function cutMeatStep() {
-  gameState = 'cutMeat';
-  meatCount = 0;
-  document.getElementById('meat-counter').style.display = 'block';
-  document.getElementById('meatN').textContent = '0';
-  setDots(1);
-  setHUD('Schritt 2: Fleisch schneiden', 'Klicke auf den Döner-Spieß oder nutze den Knopf!');
-  setBtns([
-    { label: 'Döner schneiden', emoji: '🔪', id: 'btn-cut', onClick: triggerCut },
-  ]);
-  document.getElementById('ing-panel').style.display = 'none';
+  gameState='cutMeat'; setDots(1);
+  const need=currentCustomer.meat;
+  document.getElementById('meat-counter').style.display='block';
+  document.getElementById('meatMax').textContent=need;
+  document.getElementById('meatN').textContent=0;
+  const hint=upgrades.messer?' (2 Portionen/Schnitt)':'';
+  setHUD('Schritt 2: Fleisch schneiden',`${need} Portionen gebraucht — klick auf den Spieß!${hint}`);
+  setBtns([{label:'Döner schneiden',emoji:'🔪',id:'btn-cut',onClick:triggerCut}]);
 }
 
-function triggerCut() {
-  if (isCutting) return;
-  const pos = donerGroup.position.clone().add(new THREE.Vector3(0, 0, 0));
-  doCut(pos);
-}
+function triggerCut() { doCut(donerGroup.position.clone()); }
 
 function doCut(hitPos) {
-  if (isCutting || gameState !== 'cutMeat') return;
-  if (meatCount >= 3) return;
-  isCutting = true;
-  playCut();
-
-  // Animate knife
-  knifeGroup.visible = true;
-  knifeGroup.position.set(hitPos.x - 3.5, hitPos.y + 0.2, hitPos.z + 0.2);
-  knifeGroup.rotation.z = -0.3;
-  const targetX = hitPos.x - 0.5;
-
-  tw(knifeGroup.position, { x: hitPos.x - 3.5 }, { x: targetX }, 0.25, 'out', () => {
-    // Spawn particles at spit
-    spawnMeatParticles(new THREE.Vector3(hitPos.x - 2.6, hitPos.y, hitPos.z));
-    // Shrink a meat layer slightly
-    if (meatGroup.children.length > 5) {
-      const bottom = meatGroup.children[0];
-      tw(bottom.scale, { x: 1, y: 1, z: 1 }, { x: 0.01, y: 0.01, z: 0.01 }, 0.25, 'out', () => {
-        meatGroup.remove(bottom);
-      });
+  if (isCutting||gameState!=='cutMeat') return;
+  isCutting=true; playCut();
+  knifeGroup.visible=true;
+  knifeGroup.position.set(hitPos.x-3.5,hitPos.y+.2,hitPos.z+.2);
+  knifeGroup.rotation.z=-.3;
+  const tx=hitPos.x-.5;
+  tw(knifeGroup.position,{x:hitPos.x-3.5},{x:tx},.22,'out',()=>{
+    spawnMeatParticles(new THREE.Vector3(hitPos.x-2.6,hitPos.y,hitPos.z));
+    if (meatGroup.children.length>5) {
+      const bot=meatGroup.children[0];
+      tw(bot.scale,{x:1,y:1,z:1},{x:.01,y:.01,z:.01},.2,'out',()=>meatGroup.remove(bot));
     }
-    // Meat appears on bread
-    addMeatToBread();
-    // Knife swings back
-    tw(knifeGroup.position, { x: targetX }, { x: hitPos.x - 4.5 }, 0.3, 'out', () => {
-      knifeGroup.visible = false;
-      isCutting = false;
-    });
+    const portions=upgrades.messer?2:1;
+    for (let i=0;i<portions;i++) addMeatToBread();
+    tw(knifeGroup.position,{x:tx},{x:hitPos.x-4.5},.28,'out',()=>{knifeGroup.visible=false;isCutting=false;});
   });
 }
 
 function addMeatToBread() {
-  const meat = mkMeat();
-  meat.position.set(0, ingredientHeight, 0);
-  meat.scale.set(0.01, 0.01, 0.01);
-  breadGroup.add(meat);
-  tw(meat.scale, { x:0.01,y:0.01,z:0.01 }, { x:1,y:1,z:1 }, 0.3, 'bounce');
-  ingredientHeight += 0.11;
-  meatCount++;
-  document.getElementById('meatN').textContent = meatCount;
-
-  if (meatCount >= 3) {
+  const need=currentCustomer.meat;
+  if (meatCount>=need) return;
+  const m=mkMeat(); m.position.set(0,ingredientHeight,0); m.scale.set(.01,.01,.01);
+  breadGroup.add(m); tw(m.scale,{x:.01,y:.01,z:.01},{x:1,y:1,z:1},.3,'bounce');
+  ingredientHeight+=.11; meatCount++;
+  document.getElementById('meatN').textContent=meatCount;
+  updateOrderChecklist();
+  if (meatCount>=need) {
     document.getElementById('btn-cut').classList.add('disabled');
-    setTimeout(() => {
-      document.getElementById('meat-counter').style.display = 'none';
-      addIngredientsStep();
-    }, 600);
+    setTimeout(()=>{ document.getElementById('meat-counter').style.display='none'; addIngredientsStep(); },500);
   }
 }
 
 function addIngredientsStep() {
-  gameState = 'addIngredients';
-  setDots(2);
-  setHUD('Schritt 3: Salat & Gemüse', 'Belege deinen Döner nach Herzenslust!');
-  document.getElementById('ing-panel').style.display = 'block';
+  gameState='addIngredients'; setDots(2);
+  setHUD('Schritt 3: Salat & Gemüse','Bestellt: '+currentCustomer.reqIng.join(', '));
+  document.getElementById('ing-panel').style.display='block';
   updateIngPanel();
-
-  const btns = INGREDIENT_DEFS.map(({ name, emoji }) => ({
-    label: name, emoji, cls: 'green',
-    id: 'ing-' + name,
-    onClick: () => addIngredient(name, emoji)
+  const btns=INGREDIENT_DEFS.map(({name,emoji})=>({
+    label:name, emoji, cls:'green', id:'ing-'+name, onClick:()=>addIngredient(name)
   }));
-  btns.push({ label: 'Weiter →', emoji: '➡️', cls: 'gold', onClick: sauceStep });
+  btns.push({label:'Weiter →',emoji:'➡️',cls:'gold',onClick:sauceStep});
   setBtns(btns);
 }
 
-function addIngredient(name, emoji) {
-  initAudio();
-  playPlop();
-  const def = INGREDIENT_DEFS.find(d => d.name === name);
-  if (!def) return;
-  const obj = def.mkFn();
-  obj.position.set(0, ingredientHeight, 0);
-  obj.scale.set(0.01, 0.01, 0.01);
-  breadGroup.add(obj);
-  tw(obj.scale, {x:0.01,y:0.01,z:0.01}, {x:1,y:1,z:1}, 0.35, 'bounce');
-  ingredientHeight += def.yOff;
-
+function addIngredient(name) {
+  initAudio(); playPlop();
+  const def=INGREDIENT_DEFS.find(d=>d.name===name); if(!def) return;
+  const obj=def.mkFn(); obj.position.set(0,ingredientHeight,0); obj.scale.set(.01,.01,.01);
+  breadGroup.add(obj); tw(obj.scale,{x:.01,y:.01,z:.01},{x:1,y:1,z:1},.35,'bounce');
+  ingredientHeight+=def.yOff;
   if (!addedIngredients.includes(name)) {
     addedIngredients.push(name);
-    const btn = document.getElementById('ing-'+name);
-    if (btn) { btn.classList.add('disabled'); btn.innerHTML = '✅ ' + name; }
+    const b=document.getElementById('ing-'+name);
+    if(b){b.classList.add('disabled');b.innerHTML='✅ '+name;}
   }
-  updateIngPanel();
+  updateIngPanel(); updateOrderChecklist();
 }
 
 function sauceStep() {
-  gameState = 'sauce';
-  setDots(3);
-  setHUD('Schritt 4: Soße drauf!', 'Wähle deine Lieblings-Soße(n) – oder alle!');
-
-  const btns = SAUCE_DEFS.map(({ name, emoji, color }) => ({
-    label: name, emoji, cls: 'blue',
-    id: 'sauce-'+name,
-    onClick: () => addSauce(name, emoji, color)
+  gameState='sauce'; setDots(3);
+  setHUD('Schritt 4: Soße','Bestellt: '+currentCustomer.reqSauce.join(', '));
+  const btns=SAUCE_DEFS.map(({name,emoji,color})=>({
+    label:name, emoji, cls:'blue', id:'sauce-'+name, onClick:()=>addSauce(name,color)
   }));
-  btns.push({ label: 'Fertigstellen →', emoji: '🥙', cls: 'gold', onClick: wrapStep });
+  btns.push({label:'🥙 Einreichen',emoji:'',cls:'gold',onClick:submitOrder});
   setBtns(btns);
 }
 
-function addSauce(name, emoji, color) {
-  initAudio();
-  playSauce();
-  sauceFlash(color);
-  const s = mkSauce(color);
-  s.position.set(0, ingredientHeight, 0);
-  s.scale.set(0.01, 0.01, 0.01);
-  breadGroup.add(s);
-  tw(s.scale, {x:0.01,y:0.01,z:0.01}, {x:1,y:1,z:1}, 0.4, 'out');
-  ingredientHeight += 0.04;
-
+function addSauce(name,color) {
+  initAudio(); playSauce(); sauceFlash(color);
+  const s=mkSauce(color); s.position.set(0,ingredientHeight,0); s.scale.set(.01,.01,.01);
+  breadGroup.add(s); tw(s.scale,{x:.01,y:.01,z:.01},{x:1,y:1,z:1},.4,'out');
+  ingredientHeight+=.04;
   if (!addedSauces.includes(name)) {
     addedSauces.push(name);
-    const btn = document.getElementById('sauce-'+name);
-    if (btn) { btn.classList.add('disabled'); btn.innerHTML = '✅ ' + name; }
+    const b=document.getElementById('sauce-'+name);
+    if(b){b.classList.add('disabled');b.innerHTML='✅ '+name;}
   }
-  updateIngPanel();
-}
-
-function wrapStep() {
-  gameState = 'wrapping';
-  setDots(4);
-  setHUD('Fertig! Einwickeln...', '');
-  setBtns([]);
-  initAudio();
-  playFanfare();
-
-  // Zoom camera in
-  tw(camera.position, { z: camera.position.z }, { z: 5.5 }, 1.2, 'out', () => {
-    showDoneScreen();
-  });
-}
-
-function showDoneScreen() {
-  gameState = 'done';
-  setDots(5);
-  document.getElementById('ing-panel').style.display = 'none';
-
-  const total = addedIngredients.length + addedSauces.length;
-  let stars = '⭐';
-  let msg = 'Ganz ordentlich, aber da geht noch mehr!';
-  if (total >= 7)      { stars = '⭐⭐⭐⭐⭐'; msg = 'Legendärer Döner! Türkischer Meister-Titel verliehen!'; }
-  else if (total >= 5) { stars = '⭐⭐⭐⭐';   msg = 'Sehr lecker! Der Döner-Bude würdig!'; }
-  else if (total >= 3) { stars = '⭐⭐⭐';     msg = 'Solider Döner – aber noch Luft nach oben!'; }
-  else if (total >= 1) { stars = '⭐⭐';       msg = 'Etwas karg, aber immerhin Fleisch!'; }
-
-  document.getElementById('final-stars').textContent = stars;
-  document.getElementById('final-msg').textContent = msg + '\n\n' +
-    `Zutaten: ${addedIngredients.join(', ') || '–'} | Soße: ${addedSauces.join(', ') || '–'}`;
-
-  const ds = document.getElementById('done-screen');
-  ds.style.display = 'flex';
-}
-
-function restartGame() {
-  document.getElementById('done-screen').style.display = 'none';
-  while (breadGroup.children.length) breadGroup.remove(breadGroup.children[0]);
-  breadMesh = null;
-  meatCount = 0;
-  ingredientHeight = 0.15;
-  addedIngredients = [];
-  addedSauces = [];
-  isCutting = false;
-  document.getElementById('ing-panel').style.display = 'none';
-  document.getElementById('meat-counter').style.display = 'none';
-  buildDoner();
-
-  tw(camera.position, { z: camera.position.z }, { z: 8.5 }, 0.8, 'out', () => {
-    chooseBreadStep();
-  });
+  updateIngPanel(); updateOrderChecklist();
 }
 
 // ============================================================
-// CLICK ON DÖNER SPIT (raycasting)
+// ORDER VALIDATION
 // ============================================================
-canvas.addEventListener('click', (ev) => {
-  showRipple(ev.clientX, ev.clientY);
-  if (gameState !== 'cutMeat') return;
+function submitOrder() {
+  if (orderExpired) return;
+  gameState='result'; setDots(4); setBtns([]);
+  document.getElementById('ing-panel').style.display='none';
+  document.getElementById('customer-panel').style.display='none';
+  const c=currentCustomer, results=[];
+  let earned=0;
 
-  mouse2d.x =  (ev.clientX / window.innerWidth)  * 2 - 1;
-  mouse2d.y = -(ev.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse2d, camera);
-  const hits = raycaster.intersectObjects(meatGroup.children, true);
-  if (hits.length > 0) {
-    doCut(hits[0].point);
-  }
+  // Bread
+  const breadOk=breadType===c.bread;
+  results.push({label:c.bread, ok:breadOk});
+  earned+=breadOk?2:0;
+
+  // Meat
+  const meatOk=meatCount>=c.meat;
+  results.push({label:`${c.meat}× Fleisch`+(meatOk?'':` (nur ${meatCount})`), ok:meatOk});
+  earned+=meatOk?c.meat*(upgrades.spieß?1.5:1):Math.max(0,meatCount*.5);
+
+  // Ingredients
+  c.reqIng.forEach(name=>{
+    const ok=addedIngredients.includes(name);
+    const emoji=INGREDIENT_DEFS.find(d=>d.name===name).emoji;
+    results.push({label:emoji+' '+name, ok});
+    earned+=ok?(1.5+(upgrades.vitrine?.5:0)):0;
+  });
+
+  // Sauces
+  c.reqSauce.forEach(name=>{
+    const ok=addedSauces.includes(name);
+    const emoji=SAUCE_DEFS.find(d=>d.name===name).emoji;
+    results.push({label:emoji+' '+name, ok});
+    earned+=ok?1:0;
+  });
+
+  // Extra-penalty
+  const extra=(addedIngredients.filter(n=>!c.reqIng.includes(n)).length +
+               addedSauces.filter(n=>!c.reqSauce.includes(n)).length);
+  earned=Math.max(0,earned-extra*.5);
+
+  // Speed tip
+  const elapsed=(Date.now()-patienceStart)/1000;
+  let tip=Math.round(Math.max(0,1-elapsed/c.patience)*3);
+  if (upgrades.schild) tip=Math.round(tip*1.3);
+  earned+=tip;
+  earned=Math.round(earned);
+
+  ordersCompleted++;
+  if (upgrades.stamm&&ordersCompleted%3===0) { earned*=2; }
+  money+=earned;
+  if (earned>bestOrder) bestOrder=earned;
+  updateMoney(); updateStats();
+
+  const ok=results.filter(r=>r.ok).length, total=results.length;
+  const pct=Math.round(ok/total*100);
+  let emoji='😊',title='Gut gemacht!',col='#4CAF50';
+  if (pct===100) { emoji='🤩'; title='Perfekt! Meisterkoch!'; col='#FFD700'; }
+  else if (pct>=75){ emoji='😄'; title='Sehr gut!'; col='#8BC34A'; }
+  else if (pct>=50){ emoji='😐'; title='Geht so...'; col='#FF9800'; }
+  else             { emoji='😤'; title='Das war nix!'; col='#F44336'; }
+
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-title').style.color=col;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-breakdown').innerHTML=
+    results.map(r=>`<span style="color:${r.ok?'#4CAF50':'#F44336'}">${r.ok?'✅':'❌'} ${r.label}</span>`).join(' &nbsp;|&nbsp; ')
+    +(tip>0?`<br><span style="color:#FFD700">⚡ Trinkgeld: +${tip}€</span>`:'')
+    +(upgrades.stamm&&ordersCompleted%3===0?`<br><span style="color:#FFD700">💳 Stammkunden-Bonus: ×2!</span>`:'');
+  document.getElementById('result-earned').textContent=`+${earned}€`;
+  document.getElementById('result-earned').style.color=earned>=4?'#4CAF50':'#FF9800';
+
+  if (pct===100) playFanfare(); else if (pct<50) playAngry(); else playKasse();
+  document.getElementById('order-result').style.display='flex';
+  setHUD(`${ok}/${total} korrekt — ${pct}%`,'');
+}
+
+function customerLeaveAngry() {
+  gameState='result'; setBtns([]);
+  document.getElementById('customer-panel').style.display='none';
+  document.getElementById('ing-panel').style.display='none';
+  document.getElementById('meat-counter').style.display='none';
+  playAngry();
+  ordersCompleted++; updateStats();
+  document.getElementById('result-emoji').textContent='😡';
+  document.getElementById('result-title').style.color='#F44336';
+  document.getElementById('result-title').textContent='Zu langsam!';
+  document.getElementById('result-breakdown').innerHTML=
+    `<span style="color:#F44336">${currentCustomer.name} ist ungeduldig gegangen! 0€</span>`;
+  document.getElementById('result-earned').textContent='+0€';
+  document.getElementById('result-earned').style.color='#888';
+  document.getElementById('order-result').style.display='flex';
+  setHUD('Kunde gegangen!','Nächstes Mal schneller sein!');
+}
+
+// ============================================================
+// RAYCASTING — click on spit
+// ============================================================
+const raycaster=new THREE.Raycaster(), mouse2d=new THREE.Vector2();
+canvas.addEventListener('click',ev=>{
+  showRipple(ev.clientX,ev.clientY);
+  if (gameState!=='cutMeat') return;
+  mouse2d.x=(ev.clientX/window.innerWidth)*2-1;
+  mouse2d.y=-(ev.clientY/window.innerHeight)*2+1;
+  raycaster.setFromCamera(mouse2d,camera);
+  const hits=raycaster.intersectObjects(meatGroup.children,true);
+  if (hits.length>0) doCut(hits[0].point);
 });
 
 // ============================================================
-// MAIN LOOP
+// ANIMATE
 // ============================================================
-const clock = new THREE.Clock();
-
+const clock=new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
-  const dt      = Math.min(clock.getDelta(), 0.05);
-  const elapsed = clock.getElapsedTime();
+  const dt=Math.min(clock.getDelta(),.05), el=clock.getElapsedTime();
 
-  // Rotate döner spit
-  meatGroup.rotation.y += 0.55 * dt;
+  meatGroup.rotation.y+=.55*dt;
+  heatLight.intensity=2.5+Math.sin(el*9.3)*.4+Math.sin(el*17.1)*.2;
+  heatElem.material.emissiveIntensity=4+Math.sin(el*8)*1.5;
 
-  // Flicker heat lamp
-  heatLight.intensity = 2.5 + Math.sin(elapsed * 9.3) * 0.4 + Math.sin(elapsed * 17.1) * 0.2;
-
-  // Subtle camera sway
-  if (gameState !== 'wrapping' && gameState !== 'done') {
-    camera.position.x = Math.sin(elapsed * 0.18) * 0.08;
-    camera.position.y = 3.2 + Math.sin(elapsed * 0.27) * 0.04;
+  if (gameState!=='shop'&&gameState!=='result') {
+    camera.position.x=Math.sin(el*.18)*.08;
+    camera.position.y=3.2+Math.sin(el*.27)*.04;
   }
 
-  // Heat element glow pulse
-  heatElem.material.emissiveIntensity = 4 + Math.sin(elapsed * 8) * 1.5;
+  // Patience countdown
+  if (currentCustomer&&['chooseBread','cutMeat','addIngredients','sauce'].includes(gameState)) {
+    const elapsed=(Date.now()-patienceStart)/1000;
+    const timeLeft=Math.max(0,currentCustomer.patience-elapsed);
+    const ratio=timeLeft/currentCustomer.patience;
+    const bar=document.getElementById('patience-bar');
+    if (bar) { bar.style.width=(ratio*100)+'%'; bar.style.background=ratio>.5?'#4CAF50':ratio>.25?'#FF9800':'#F44336'; }
+    if (timeLeft<=0&&!orderExpired) { orderExpired=true; customerLeaveAngry(); }
+  }
 
   stepTweens(dt);
   updateParticles();
-
-  renderer.render(scene, camera);
+  renderer.render(scene,camera);
 }
 animate();
 </script>
